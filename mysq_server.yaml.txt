@@ -1,0 +1,33 @@
+- name: Install MySQL database server
+  hosts: localhost
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: true
+  tags: [database]
+  tasks:
+        - name: Update the software package repository
+          yum:
+                update_cache: yes
+
+        - name: Install MySQL
+          package:
+                name: "{{ item }}"
+                state: latest
+
+          with_items:
+              - mysql-server
+              - mysql-client
+              - python-mysqldb
+
+       - name: Open port 3306 for sql access
+         firewalld:
+          service: tcp
+          permanent: true
+          state: enabled
+
+       - name: Restart the firewalld service to load in the firewall changes
+          service:
+          name: firewalld
+          state: restarted
